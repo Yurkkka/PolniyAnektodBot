@@ -27,5 +27,5 @@ class User(BaseClass):
 
 with db:
     db.create_tables([Anekdot, User])
+    print('done')
 
-print('done')
