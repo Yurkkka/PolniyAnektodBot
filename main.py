@@ -36,7 +36,7 @@ def send_anekdot_bezmata(message):
         if cnt_anekdots == cnt_likes:
             update_db(message)
         else:
-            user.cnt_anekdots = cnt_anekdots + 1
+            user.cnt_anekdots = cnt_anekdots + 1  # to do add save to db cnt_anekdots
             bot.send_message(message.chat.id, f'{database.Anekdot.text.get(id=cnt_anekdots)}')
 
 
