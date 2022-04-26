@@ -6,6 +6,8 @@ import database
 from parse_anekdot import *
 
 bot = telebot.TeleBot(token)  # access token to bot
+CURRENT_ANEKDOT_ID = 1
+CURRENT_ANEKDOT_TYPE = 0
 
 
 def register_user(message):
@@ -23,7 +25,7 @@ def start(message):
     register_user(message)
     markup = types.ReplyKeyboardMarkup(
         resize_keyboard=True)  # создание интрфейса кнопок для взаимодействия с пользователем
-    markup.add(bez_mata, s_matom, likes)
+    markup.add(bez_mata, s_matom, like, likes)
     bot.send_message(message.chat.id, f"{message.chat.first_name}, добро пожаловать! Угощаю вас порцией анекдотов))",
                      reply_markup=markup)
 
@@ -37,6 +39,7 @@ def update_db(message, isMat):
 
 
 def send_anekdot_smatom(message):
+    global CURRENT_ANEKDOT_ID, CURRENT_ANEKDOT_TYPE
     with database.db:
         user = database.User.get(user_id=message.chat.id)
         anekdot = database.AnekdotMat
@@ -51,15 +54,20 @@ def send_anekdot_smatom(message):
             if flag:
                 user.cnt_anekdots_smatom = cnt_anekdots + 1
                 user.save()
+                CURRENT_ANEKDOT_ID = anekdot.get(anekdot.id == user.cnt_anekdots_smatom).id
+                CURRENT_ANEKDOT_TYPE = 1
                 bot.send_message(message.chat.id, f'{anekdot.get(anekdot.id == user.cnt_anekdots_smatom).text}')
                 flag = 0
         else:
             user.cnt_anekdots_smatom = cnt_anekdots + 1
             user.save()
+            CURRENT_ANEKDOT_ID = anekdot.get(anekdot.id == user.cnt_anekdots_smatom).id
+            CURRENT_ANEKDOT_TYPE = 1
             bot.send_message(message.chat.id, f'{anekdot.get(anekdot.id == user.cnt_anekdots_smatom).text}')
 
 
 def send_anekdot_bezmata(message):
+    global CURRENT_ANEKDOT_ID, CURRENT_ANEKDOT_TYPE
     with database.db:
         user = database.User.get(user_id=message.chat.id)
         anekdot = database.AnekdotBezMata
@@ -75,15 +83,36 @@ def send_anekdot_bezmata(message):
                 user.cnt_anekdots_bezmata = cnt_anekdots + 1
                 user.save()
                 bot.send_message(message.chat.id, f'{anekdot.get(anekdot.id == user.cnt_anekdots_bezmata).text}')
+                CURRENT_ANEKDOT_ID = anekdot.get(anekdot.id == user.cnt_anekdots_bezmata).id
+                CURRENT_ANEKDOT_TYPE = 0
                 flag = 0
         else:
             user.cnt_anekdots_bezmata = cnt_anekdots + 1
             user.save()
+            CURRENT_ANEKDOT_ID = anekdot.get(anekdot.id == user.cnt_anekdots_bezmata).id
+            CURRENT_ANEKDOT_TYPE = 0
             bot.send_message(message.chat.id, f'{anekdot.get(anekdot.id == user.cnt_anekdots_bezmata).text}')
 
 
+def like_anekdot(message):
+    if CURRENT_ANEKDOT_TYPE:
+        user = database.User.get(user_id=message.chat.id)
+        user.likes_id += f'1:{CURRENT_ANEKDOT_ID} '
+        user.save()
+    else:
+        user = database.User.get(user_id=message.chat.id)
+        user.likes_id += f'0:{CURRENT_ANEKDOT_ID} '
+        user.save()
+
+
 def send_likes(message):
-    pass
+    likes_anekodts = database.User.get(user_id=message.chat.id).likes_id
+    for i in likes_anekodts.split():
+        if int(i[0]) == 0:
+            bot.send_message(message.chat.id,
+                             f'{database.AnekdotBezMata.get(database.AnekdotBezMata.id == i[2:]).text}')
+        else:
+            bot.send_message(message.chat.id, f'{database.AnekdotMat.get(database.AnekdotMat.id == i[2:]).text}')
 
 
 @bot.message_handler(content_types=['text'])
@@ -95,6 +124,8 @@ def bot_message(message):
             send_anekdot_smatom(message)
         elif message.text == likes.text:
             send_likes(message)
+        elif message.text == like.text:
+            like_anekdot(message)
 
 
 while True:  # for all time polling bot without exit from exceptions
