@@ -1,6 +1,6 @@
 from peewee import *
 
-db = SqliteDatabase('dbmy.db')  # connection to db
+db = SqliteDatabase('data.db')  # connection to db
 
 
 class BaseClass(Model):  # base class
@@ -12,7 +12,7 @@ class BaseClass(Model):  # base class
 
 
 class Anekdot(BaseClass):
-    text = TextField()
+    text = CharField()
 
     class Meta:
         db_table = 'anekdots'

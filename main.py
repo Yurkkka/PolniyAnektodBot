@@ -10,7 +10,7 @@ bot = telebot.TeleBot(token)  # access token to bot
 
 def register_user(message):
     with database.db:
-        user = database.User(cnt_likes=0, user_id=message.chat.id, likes="", cnt_anekdots=0, page=1).save()
+        user = database.User(cnt_likes=0, user_id=message.chat.id, likes="", cnt_anekdots=1, page=1).save()
 
 
 @bot.message_handler(commands=['start'])
@@ -30,14 +30,16 @@ def update_db(message):
 
 def send_anekdot_bezmata(message):
     with database.db:
-        user = database.User
-        cnt_anekdots = user.get(message.chat.id == database.User.user_id).cnt_anekdots
-        cnt_likes = user.get(message.chat.id == database.User.user_id).cnt_likes
+        user = database.User.get(user_id=message.chat.id)
+        anekdot = database.Anekdot
+        cnt_anekdots = user.cnt_anekdots
+        cnt_likes = user.cnt_likes
         if cnt_anekdots == cnt_likes:
             update_db(message)
         else:
-            user.cnt_anekdots = cnt_anekdots + 1  # to do add save to db cnt_anekdots
-            bot.send_message(message.chat.id, f'{database.Anekdot.text.get(id=cnt_anekdots)}')
+            user.cnt_anekdots = cnt_anekdots + 1
+            user.save()
+            bot.send_message(message.chat.id, f'{anekdot.get(anekdot.id == user.cnt_anekdots).text}')
 
 
 def send_anekdot_smatom(message):

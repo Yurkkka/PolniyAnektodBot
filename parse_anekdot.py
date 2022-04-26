@@ -5,6 +5,7 @@ import database
 
 def parse_anekdot_bezmata(message):
     user = database.User.get(user_id=message.chat.id)
+    anekdot = database.Anekdot
     user_page = user.page
     response = requests.get(
         f"https://nekdo.ru/censure/{user_page}")  # сюда get запросом вставляешь номер страницы следующей с которой парсишь, когда в бд нет новых анекдотов
@@ -12,7 +13,7 @@ def parse_anekdot_bezmata(message):
     item = page.findAll('div', 'text')
 
     for i in item:
-        database.Anekdot(text=str(i.get_text())).save()
+        anekdot.create(text=str(i.get_text()))
 
     user.cnt_likes = len(item)
     user.page = user_page + 1
