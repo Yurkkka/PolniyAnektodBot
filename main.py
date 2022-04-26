@@ -21,6 +21,8 @@ def start(message):
     markup.add(bez_mata, s_matom, likes)
     bot.send_message(message.chat.id, f"{message.chat.first_name}, добро пожаловать! Угощаю вас порцией анекдотов))",
                      reply_markup=markup)
+    photo = open("images/hello.jpg", "rb")
+    bot.send_photo(message.chat.id,photo)
 
 
 def update_db(message):
