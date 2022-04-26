@@ -1,6 +1,6 @@
 from peewee import *
 
-db = SqliteDatabase('data.db')  # connection to db
+db = SqliteDatabase('d.db')  # connection to db
 
 
 class BaseClass(Model):  # base class
@@ -11,11 +11,18 @@ class BaseClass(Model):  # base class
         order_by = 'id'
 
 
-class Anekdot(BaseClass):
+class AnekdotBezMata(BaseClass):
     text = CharField()
 
     class Meta:
-        db_table = 'anekdots'
+        db_table = 'anekdots_bezmata'
+
+
+class AnekdotMat(BaseClass):
+    text = CharField()
+
+    class Meta:
+        db_table = 'anekdots_smatom'
 
 
 class Likes(BaseClass):
@@ -27,14 +34,17 @@ class Likes(BaseClass):
 
 class User(BaseClass):
     likes = ForeignKeyField(Likes)
-    cnt_anekdots = IntegerField()
-    cnt_likes = IntegerField()
+    cnt_anekdots_smatom = IntegerField()
+    cnt_anekdots_bezmata = IntegerField()
+    cnt_likes_smatom = IntegerField()
+    cnt_likes_bezmata = IntegerField()
     user_id = IntegerField()
-    page = IntegerField()
+    page_smatom = IntegerField()
+    page_bezmata = IntegerField()
 
     class Meta:
         db_table = 'users'
 
 
 with db:
-    db.create_tables([Anekdot, Likes, User])
+    db.create_tables([AnekdotMat, AnekdotBezMata, Likes, User])
